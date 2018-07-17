@@ -1,6 +1,6 @@
-pragma solidity ^0.5.0
+//pragma solidity ^0.4.24
 
-contract MainContract{
-	address[100] public drivers;
-	function rent 
-}
+//contract MainContract{
+//	address[100] public drivers;
+		 
+//}

@@ -1,6 +1,12 @@
 pragma solidity ^0.4.24;
 
 contract Trip{
+    
+    struct location{
+        uint X;
+        uint Y;
+    }
+    
     struct driver{
         location dloc;
         uint rate;
@@ -9,31 +15,24 @@ contract Trip{
     mapping (address => location) driverLocations;
     
     address passenger;
-    uint fee;
+    uint public fee;
+    uint public contractValue;
     bool tripping = false;
+
+    location source;
+    location destination;
     
-    uint sourceX;
-    uint sourceY;
-    uint destinationX;
-    uint destinationY;
-    
-    struct location{
-        uint srcX;
-        uint srcY;
-    }
+    driver driverInstance;
     
     function Trip(uint sourceX_, uint sourceY_, uint destinationX_, uint destinationY_){
-        sourceX = sourceX_;
-        sourceY = sourceY_;
-        destinationX = destinationX_;
-        destinationY = destinationY_;
+        source.X = sourceX_;
+        source.Y = sourceY_;
+        destination.X = destinationX_;
+        destination.Y = destinationY_;
         passenger = msg.sender;
     }
     
-    uint driverX;
-    uint driverY;
-    
-    function sqrt(uint x) returns (uint y) {
+    function sqrt(uint x) private returns (uint y) {
         uint z = (x + 1) / 2;
         y = x;
         while (z < y) {
@@ -43,17 +42,22 @@ contract Trip{
     }
     
     modifier passengerHasEnoughDeposit(){
-        require(msg.value > fee);
+        require(msg.value > fee,"Not enough Ether provided.");
         _;
     }
     
-    modifier sameLocation(){
-        require(sqrt((driverX - sourceX)**2 + (driverY - sourceY)**2) <= 5);
+    modifier sameStartLocation(){
+        require(sqrt((driverInstance.dloc.X - source.X)**2 + (driverInstance.dloc.Y - source.Y)**2) <= 5);
         _;
     }
     
-    function calculateFee() private returns (bool){
-        fee = sqrt((destinationX - sourceX)**2 + (destinationY - sourceY)**2)*1 ether;
+    modifier sameEndLocation(){
+        require(sqrt((driverInstance.dloc.X - destination.X)**2 + (driverInstance.dloc.Y - destination.Y)**2) <= 5);
+        _;
+    }
+    
+    function calculateFee() returns (bool){
+        fee = sqrt((destination.X - source.X)**2 + (destination.Y - source.Y)**2)*1 ether;
         
         if((msg.value > fee))
             return true;
@@ -61,11 +65,16 @@ contract Trip{
             return false;
     }
     
-    // function tripRequest() private passengerHasEnoughDeposit{
-    //     _;
-    // }
+    bool public sendAck = false;
+    function () payable {       //sendingTripFeeToContract from passenger account
+        contractValue=this.balance;
+    }
     
-    function startTrip() private sameLocation{
+    function endTrip() public sameEndLocation {
+        suicide(msg.sender);
+    }
+    
+    function startTrip() private sameStartLocation{
         tripping = true;
         
     }
