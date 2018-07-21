@@ -2,10 +2,7 @@ pragma solidity ^0.4.24;
 
 contract Trip{
     
-    struct location{
-        uint X;
-        uint Y;
-    }
+    Location location;
     
     struct driver{
         location dloc;
