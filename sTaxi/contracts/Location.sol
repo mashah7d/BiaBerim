@@ -1,13 +1,14 @@
 pragma solidity ^0.4.24;
 
 contract Location{
-	uint x;
-	uint y;
+    uint x;
+    uint y;
 
-	constructor() public{
-      x=10;
-      y=10;
+    constructor(uint _x,uint _y) public{
+      x=_x;
+      y=_y;
     }
+ 
 
     function getX() public returns(uint) {
         return x; 
@@ -15,5 +16,13 @@ contract Location{
 
     function getY() public returns(uint) {
         return y; 
+    }
+    
+    function setX(uint _x) public {
+        x=_x; 
+    }
+    
+    function setY(uint _y) public {
+        y=_y; 
     }
 }
