@@ -1,33 +1,40 @@
 import "./Location.sol";
 import "./Driver.sol";
-
+import "./Manager.sol";
 contract Trip{
     
     
     Location source = new Location(0,0);
     Location destination = new Location(0,0);
-    
-
+    Manager manager;
 
     //write all trip statuses, check the status in each function carefully
     enum tripStatus{tripRequested,driverArrived,tripEnded,tripCanceldByPassenger}
-    
-    uint public tripFee;
+
+    uint private tripFee;
     uint public contractValue;
-    Driver driver;
-    address passengerAddress;
+    Driver public driver;
+    address public passengerAddress;
     bool private paid=false;
     bool public sendAck = false;
     bool rated=false;
-    constructor(Driver _driver, Location _source, Location _destination,uint _tripFee,address _passengerAddress) payable {
-        driver = _driver;
-        source.setX(_source.getX());
-        source.setY(_source.getY());
-        destination.setX(_destination.getX());
-        destination.setY(_destination.getY());
-        tripFee=_tripFee;
-        passengerAddress=_passengerAddress;
+    address public driverAddress;
+    constructor(uint _xSource,uint _ySource,uint _xDestination,uint _yDestination) payable {
+        manager=new Manager(); 
+        source.setX(_xSource);
+        source.setY(_ySource);
+        destination.setX(_xDestination);
+        destination.setY(_yDestination);
+        tripFee=sqrt(( _xDestination - _xSource)**2 + (_yDestination - _ySource)**2)* 1 ether;
+        passengerAddress=msg.sender;
+        driver=findDriver(_xSource,_ySource);
+        driverAddress=manager.getDriverAddress(driver);
     } 
+    
+    function findDriver(uint _xSource,uint _ySource) returns (Driver){
+      return (manager.findNearestDriver(_xSource,_ySource));
+    }
+    
     
     modifier  passengerHasEnoughDeposit()  {
         require(passengerAddress.balance > tripFee,"Not enough Ether provided.");
@@ -51,15 +58,9 @@ contract Trip{
             return false;
     }
     
- 
-    function payFee() passengerHasEnoughDeposit(){
-        //passenger accepts to send the money- what shoud we do ?!?
-    }
     
-     //sendingTripFeeToContract from passenger account
     function () payable {      
         contractValue = this.balance;
-        //check that the amount of the payment is equal to the tripFee,else return the money with refund()
         if(contractValue>=tripFee){
             paid=true;
         }else{
@@ -80,8 +81,6 @@ contract Trip{
         }
 
     }
-    
-
     
     
     //complete the passenger request for ending the trip
@@ -107,7 +106,7 @@ contract Trip{
     //we need three requier for endTrip
     //check the timer not to be ended 10 hour for example
 
-    require(sameLocation(driver.getLocation(),destination));
+ //   require(sameLocation(driver.getLocation(),destination));
    // require(rated);
     suicide(msg.sender);
     
