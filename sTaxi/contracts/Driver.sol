@@ -10,9 +10,10 @@ contract Driver{
     uint private rateValue;
     uint private numRates; 
     Location private location;
+    bool isFree = true;
     
 
-    constructor(string _name, string _plateNumber, string _mobileNumber,Location _location, uint _id,address _add) public{
+    constructor(string _name, string _plateNumber, string _mobileNumber,Location _location, uint _id) public{
       name = _name;
       plateNumber = _plateNumber;
       mobileNumber = _mobileNumber;
@@ -49,5 +50,18 @@ contract Driver{
         location=new Location(_x,_y);
     }
     
+    function getIsFree() public returns (bool){
+        return isFree;
+    }
     
+    function setIsFree(bool isFree_) public{
+        isFree=isFree_;
+    }
+    
+    function toggle() public{
+        if(isFree)
+            isFree = false;
+        else
+            isFree = true;
+    }
 }

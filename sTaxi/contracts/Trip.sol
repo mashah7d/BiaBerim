@@ -3,15 +3,17 @@ import "./Driver.sol";
 import "./Manager.sol";
 contract Trip{
     
-    
     Location source = new Location(0,0);
     Location destination = new Location(0,0);
+    Location newDriverLocation =  new Location(0,0);
+    Location newPassengerLocation =  new Location(0,0);
     Manager manager;
 
     //write all trip statuses, check the status in each function carefully
-    enum tripStatus{tripRequested,driverArrived,tripEnded,tripCanceldByPassenger}
+    enum tripStatus{tripRequested, tripNotStarted, tripStarted,tripEnded,tripCanceldByPassenger}
+    tripStatus tripStat = tripStatus.tripRequested;
 
-    uint private tripFee;
+    uint public tripFee;
     uint public contractValue;
     Driver public driver;
     address public passengerAddress;
@@ -19,6 +21,7 @@ contract Trip{
     bool public sendAck = false;
     bool rated=false;
     address public driverAddress;
+    
     constructor(uint _xSource,uint _ySource,uint _xDestination,uint _yDestination) payable {
         manager=new Manager(); 
         source.setX(_xSource);
@@ -27,11 +30,12 @@ contract Trip{
         destination.setY(_yDestination);
         tripFee=sqrt(( _xDestination - _xSource)**2 + (_yDestination - _ySource)**2)* 1 ether;
         passengerAddress=msg.sender;
-        driver=findDriver(_xSource,_ySource);
-        driverAddress=manager.getDriverAddress(driver);
+        driverAddress=manager.findNearestDriver(_xSource,_ySource);
+        //findDriver(_xSource,_ySource);
+        // driverAddress=manager.getDriverAddress(driver);
     } 
     
-    function findDriver(uint _xSource,uint _ySource) returns (Driver){
+    function findDriver(uint _xSource,uint _ySource) returns (address){
       return (manager.findNearestDriver(_xSource,_ySource));
     }
     
@@ -58,8 +62,11 @@ contract Trip{
             return false;
     }
     
+    function test(){
+        msg.sender.send(20 ether);
+    }
     
-    function () payable {      
+    function () payable {
         contractValue = this.balance;
         if(contractValue>=tripFee){
             paid=true;
@@ -70,45 +77,51 @@ contract Trip{
     }
     
     function refund() payable{
-        suicide(passengerAddress);
+        if(tripStat == tripStatus.tripNotStarted)
+            suicide(passengerAddress);
     }
     
-    
-    
-  function startTrip() private {
+    function startTrip() private {
         if(sameLocation(driver.getLocation(), source))    {
             //change the status
+            tripStat = tripStatus.tripStarted;
+            driver.setIsFree(false);
         }
 
     }
     
-    
     //complete the passenger request for ending the trip
     function passengerEndTrip(){
-        
-     refund();
-     }   
-    
-    
-    
+        if(tripStat == tripStatus.tripNotStarted)
+            refund();
+    }
     
     function rateDriver(uint _rate){
         if(_rate!=0){
             driver.rate(_rate);
         }
-            rated=true;
+        rated=true;
     }
     
+    function getNewDriverLocation() private returns (Location){
+        return newDriverLocation;
+    }
     
+    function getNewPassengerLocation() private returns (Location){
+        return newPassengerLocation;
+    }
     
-    function endTrip() public {
-        
-    //we need three requier for endTrip
+    modifier validLocationsForEndTrip(){
+        require(sameLocation(getNewDriverLocation(),destination) && sameLocation(getNewPassengerLocation(), destination), "not modified");
+        _;
+    }
+    
+    function endTrip() public validLocationsForEndTrip{
+        tripStat = tripStatus.tripEnded;
+        driver.setIsFree(true);
+    //we need three requirement for endTrip
     //check the timer not to be ended 10 hour for example
-
- //   require(sameLocation(driver.getLocation(),destination));
-   // require(rated);
-    suicide(msg.sender);
-    
+    // require(rated);
+        suicide(msg.sender);
     }
 }
