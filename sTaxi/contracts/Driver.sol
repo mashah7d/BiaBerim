@@ -10,8 +10,9 @@ contract Driver{
     uint private rateValue;
     uint private numRates; 
     Location private location;
+    
 
-    constructor(string _name, string _plateNumber, string _mobileNumber,Location _location, uint _id) public{
+    constructor(string _name, string _plateNumber, string _mobileNumber,Location _location, uint _id,address _add) public{
       name = _name;
       plateNumber = _plateNumber;
       mobileNumber = _mobileNumber;
@@ -47,4 +48,6 @@ contract Driver{
     function setLocation(uint _x,uint _y) public{
         location=new Location(_x,_y);
     }
+    
+    
 }
