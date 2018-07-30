@@ -12,7 +12,7 @@ contract Trip{
     Manager manager;
 
     //trip statuses, checkign the status in each function
-    enum tripStatus{tripRequested, tripNotStarted, tripStarted,tripEnded,tripCanceldByPassenger}
+    enum tripStatus{tripRequested, tripNotStarted, tripStarted, tripEnded, tripCanceldByPassenger}
     tripStatus tripStat = tripStatus.tripRequested;
 
     uint public tripFee;
@@ -41,11 +41,11 @@ contract Trip{
         driver = Driver(manager.findNearestDriver(source.getX(),source.getY()));
     }
     
+    //Not Used
     function findDriver(uint _xSource,uint _ySource) private returns (address){
         driverAddress = (manager.findNearestDriver(_xSource,_ySource));
         return driverAddress;
     }
-    
     
     modifier passengerHasEnoughDeposit()  {
         require(passengerAddress.balance > tripFee,"Not enough Ether provided.");

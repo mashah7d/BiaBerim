@@ -55,7 +55,8 @@ contract Manager{
             
             if(drivers[driverAddressFinder[i]].getLocation().distanceFrom(source) < temp && drivers[driverAddressFinder[i]].getIsFree()){
                 temp=drivers[driverAddressFinder[i]].getLocation().distanceFrom(source);
-                        emit logDistanceFrom(driverCounter);
+                
+                emit logDistanceFrom(driverCounter);
 
                 driverNum=i;
             }
