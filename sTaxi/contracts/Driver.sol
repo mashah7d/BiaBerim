@@ -10,15 +10,20 @@ contract Driver{
     uint private rateValue;
     uint private numRates; 
     Location private location;
+    Location temp;
+    uint x;
+    uint y;
     bool isFree = true;
     
 
-    constructor(string _name, string _plateNumber, string _mobileNumber,Location _location, uint _id) public{
-      name = _name;
-      plateNumber = _plateNumber;
-      mobileNumber = _mobileNumber;
-      location=_location;
-      id = _id;
+    constructor(string _name, string _plateNumber, string _mobileNumber,uint x, uint y, uint _id) public{
+        temp.setX(x);
+        temp.setY(y);
+        name = _name;
+        plateNumber = _plateNumber;
+        mobileNumber = _mobileNumber;
+        location=temp;
+        id = _id;
     }
 
     function rate(uint _rate) public{   

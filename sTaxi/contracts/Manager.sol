@@ -8,9 +8,10 @@ contract Manager{
     mapping (address => Driver) public drivers;
     mapping (uint => address) public driverAddressFinder;
     uint public driverCounter=0;
-event newDriver(address a);
+    event newDriver(address a);
+    
     function driverSignUp(string _name, string _plateNumber, string _mobileNumber,uint _x,uint _y) public{
-         Driver driver = new Driver(_name, _plateNumber, _mobileNumber,new Location(_x,_y),driverCounter);
+         Driver driver = new Driver(_name, _plateNumber, _mobileNumber, _x, _y,driverCounter);
          addDriver(msg.sender, driver);
          
     }
@@ -24,7 +25,7 @@ event newDriver(address a);
     }
   
   
-    function sqrt(uint x) private returns (uint y) {
+    function sqrt(uint x) private pure returns (uint y) {
             uint z = (x + 1) / 2;
         y = x;
         while (z < y) {
@@ -41,19 +42,24 @@ event newDriver(address a);
         }
     }
     event findNearestDriverLog(uint driverNum, address driverAddress);
+    event logDistanceFrom(uint a);
+
     //Ali ino bezan :), Sina zadamesh:)
     function findNearestDriver(uint _xSource,uint _ySource) public returns (address){
         //Write the code to iterate all drivers and calculate their distance from source 
         Location source = new Location(_xSource, _ySource);
         uint temp=1000000;
-        uint driverNum;
+        uint driverNum=2;
+        emit logDistanceFrom(driverCounter);
         for(uint i=0; i<driverCounter; i++){
+            
             if(drivers[driverAddressFinder[i]].getLocation().distanceFrom(source) < temp && drivers[driverAddressFinder[i]].getIsFree()){
                 temp=drivers[driverAddressFinder[i]].getLocation().distanceFrom(source);
+                
                 driverNum=i;
             }
         }
-        findNearestDriverLog(driverNum, driverAddressFinder[driverNum]);                                                                                                              
+        emit findNearestDriverLog(driverNum, driverAddressFinder[driverNum]);                                                                                                              
         return driverAddressFinder[driverNum];
     }
     
