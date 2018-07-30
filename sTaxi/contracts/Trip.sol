@@ -24,19 +24,22 @@ contract Trip{
     bool rated=false;
     address public driverAddress;
     
-    constructor(uint _xSource,uint _ySource,uint _xDestination,uint _yDestination, address mangerAddress) public payable {
-        manager = Manager(mangerAddress);
+    constructor(uint _xSource,uint _ySource,uint _xDestination,uint _yDestination) public payable {
         source.setX(_xSource);
         source.setY(_ySource);
         destination.setX(_xDestination);
         destination.setY(_yDestination);
         tripFee=sqrt(( _xDestination - _xSource)**2 + (_yDestination - _ySource)**2)* 1 ether;
         passengerAddress=msg.sender;
-        driver = Driver(manager.findNearestDriver(_xSource,_ySource));
         // driverAddress = driver.getDriverAddress();
         //findDriver(_xSource,_ySource);
         // driverAddress=manager.getDriverAddress(driver);
-    } 
+    }
+    
+    function setManager(address mangerAddress) public {
+        manager = Manager(mangerAddress);
+        driver = Driver(manager.findNearestDriver(source.getX(),source.getY()));
+    }
     
     function findDriver(uint _xSource,uint _ySource) private returns (address){
         driverAddress = (manager.findNearestDriver(_xSource,_ySource));
@@ -44,7 +47,7 @@ contract Trip{
     }
     
     
-    modifier  passengerHasEnoughDeposit()  {
+    modifier passengerHasEnoughDeposit()  {
         require(passengerAddress.balance > tripFee,"Not enough Ether provided.");
         _;
     }
