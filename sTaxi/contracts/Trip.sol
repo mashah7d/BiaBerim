@@ -1,3 +1,5 @@
+pragma solidity ^0.4.24;
+
 import "./Location.sol";
 import "./Driver.sol";
 import "./Manager.sol";
@@ -9,7 +11,7 @@ contract Trip{
     Location newPassengerLocation =  new Location(0,0);
     Manager manager;
 
-    //write all trip statuses, check the status in each function carefully
+    //trip statuses, checkign the status in each function
     enum tripStatus{tripRequested, tripNotStarted, tripStarted,tripEnded,tripCanceldByPassenger}
     tripStatus tripStat = tripStatus.tripRequested;
 
@@ -22,21 +24,23 @@ contract Trip{
     bool rated=false;
     address public driverAddress;
     
-    constructor(uint _xSource,uint _ySource,uint _xDestination,uint _yDestination) payable {
-        manager=new Manager(); 
+    constructor(uint _xSource,uint _ySource,uint _xDestination,uint _yDestination, address mangerAddress) public payable {
+        manager = Manager(mangerAddress);
         source.setX(_xSource);
         source.setY(_ySource);
         destination.setX(_xDestination);
         destination.setY(_yDestination);
         tripFee=sqrt(( _xDestination - _xSource)**2 + (_yDestination - _ySource)**2)* 1 ether;
         passengerAddress=msg.sender;
-        driverAddress=manager.findNearestDriver(_xSource,_ySource);
+        driver = Driver(manager.findNearestDriver(_xSource,_ySource));
+        // driverAddress = driver.getDriverAddress();
         //findDriver(_xSource,_ySource);
         // driverAddress=manager.getDriverAddress(driver);
     } 
     
-    function findDriver(uint _xSource,uint _ySource) returns (address){
-      return (manager.findNearestDriver(_xSource,_ySource));
+    function findDriver(uint _xSource,uint _ySource) private returns (address){
+        driverAddress = (manager.findNearestDriver(_xSource,_ySource));
+        return driverAddress;
     }
     
     
@@ -46,7 +50,7 @@ contract Trip{
     }
     
     
-    function sqrt(uint x) private returns (uint y) {
+    function sqrt(uint x) pure private returns (uint y) {
         uint z = (x + 1) / 2;
         y = x;
         while (z < y) {
@@ -55,18 +59,18 @@ contract Trip{
         }
     }
    
-    function sameLocation(Location a, Location b) private returns (bool){
+    function sameLocation(Location a, Location b) view private returns (bool){
         if(sqrt((b.getX() - a.getX())**2 + (b.getY() - a.getY())**2) <= 5)
             return true;
         else
             return false;
     }
     
-    function test(){
-        msg.sender.send(20 ether);
-    }
+    // function test(){
+    //     msg.sender.send(20 ether);
+    // }
     
-    function () payable {
+    function () public payable {
         contractValue = this.balance;
         if(contractValue>=tripFee){
             paid=true;
@@ -76,7 +80,7 @@ contract Trip{
         }
     }
     
-    function refund() payable{
+    function refund() public payable{
         if(tripStat == tripStatus.tripNotStarted)
             suicide(passengerAddress);
     }
@@ -91,37 +95,41 @@ contract Trip{
     }
     
     //complete the passenger request for ending the trip
-    function passengerEndTrip(){
+    function passengerCancelTrip() public {
         if(tripStat == tripStatus.tripNotStarted)
             refund();
     }
     
-    function rateDriver(uint _rate){
+    function rateDriver(uint _rate) public {
         if(_rate!=0){
             driver.rate(_rate);
         }
         rated=true;
     }
     
-    function getNewDriverLocation() private returns (Location){
-        return newDriverLocation;
+    function setNewDriverLocation(uint xx, uint yy) public{
+        newDriverLocation = new Location(xx,yy);
     }
     
-    function getNewPassengerLocation() private returns (Location){
-        return newPassengerLocation;
+    function getNewPassengerLocation(uint xx, uint yy) public{
+        newPassengerLocation = new Location(xx, yy);
     }
     
     modifier validLocationsForEndTrip(){
-        require(sameLocation(getNewDriverLocation(),destination) && sameLocation(getNewPassengerLocation(), destination), "not modified");
+        require(sameLocation(newDriverLocation, destination) && sameLocation(newPassengerLocation, destination), "not modified");
         _;
     }
     
-    function endTrip() public validLocationsForEndTrip{
+    event testEndTrip(uint a);
+    function endTrip() public validLocationsForEndTrip {
+        // require(msg.sender == driver.getDriverAddress());
+        emit testEndTrip(111);
+
         tripStat = tripStatus.tripEnded;
-        driver.setIsFree(true);
-    //we need three requirement for endTrip
-    //check the timer not to be ended 10 hour for example
-    // require(rated);
+        // driver.toggle();
+        //we need three requirement for endTrip
+        //check the timer not to be ended 10 hour for example
+        // require(rated);
         suicide(msg.sender);
     }
 }

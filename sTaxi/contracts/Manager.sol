@@ -8,17 +8,17 @@ contract Manager{
     mapping (address => Driver) public drivers;
     mapping (uint => address) public driverAddressFinder;
     uint public driverCounter=0;
-    event newDriver(address a);
+    event newDriver(uint a);
     
     function driverSignUp(string _name, string _plateNumber, string _mobileNumber,uint _x,uint _y) public{
-         Driver driver = new Driver(_name, _plateNumber, _mobileNumber, _x, _y,driverCounter);
-         addDriver(msg.sender, driver);
-         
+        Driver driver = new Driver(_name, _plateNumber, _mobileNumber, _x, _y, driverCounter);
+        emit newDriver(1000);
+
+        addDriver(msg.sender, driver);
     }
     
     function addDriver(address _driverAddress,Driver _driver) private {
         drivers[_driverAddress] = _driver;
-        
         driverAddressFinder[driverCounter] = _driverAddress;
         
         driverCounter++;
@@ -26,7 +26,7 @@ contract Manager{
   
   
     function sqrt(uint x) private pure returns (uint y) {
-            uint z = (x + 1) / 2;
+        uint z = (x + 1) / 2;
         y = x;
         while (z < y) {
             y = z;
@@ -41,6 +41,7 @@ contract Manager{
             }
         }
     }
+    
     event findNearestDriverLog(uint driverNum, address driverAddress);
     event logDistanceFrom(uint a);
 
@@ -50,12 +51,12 @@ contract Manager{
         Location source = new Location(_xSource, _ySource);
         uint temp=1000000;
         uint driverNum=2;
-        emit logDistanceFrom(driverCounter);
-        for(uint i=0; i<driverCounter; i++){
+        for(uint i=0; i<2; i++){
             
             if(drivers[driverAddressFinder[i]].getLocation().distanceFrom(source) < temp && drivers[driverAddressFinder[i]].getIsFree()){
                 temp=drivers[driverAddressFinder[i]].getLocation().distanceFrom(source);
-                
+                        emit logDistanceFrom(driverCounter);
+
                 driverNum=i;
             }
         }

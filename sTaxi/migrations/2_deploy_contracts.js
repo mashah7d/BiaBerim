@@ -1,8 +1,14 @@
-//var MainContract = artifacts.require("./MainContract.sol");
-var Trip = artifacts.require("./Trip.sol");
+var Driver = artifacts.require("Driver");
+var Location = artifacts.require("Location");
+var Manager = artifacts.require("Manager");
+var Trip = artifacts.require("Trip");
 
 module.exports = function(deployer) {
-  //deployer.deploy(MainContract);
-  deployer.deploy(Trip);
+    deployer.deploy(Location,0,0);
+    deployer.deploy(Manager);
+    deployer.deploy(Trip,0,0,1,1,);
+	deployer.deploy(Driver,"sina","1234","4321",0,0,0);
+
+
 };
 

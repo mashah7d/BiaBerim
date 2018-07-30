@@ -10,11 +10,11 @@ contract Location{
     }
  
 
-    function getX() public returns(uint) {
+    function getX() view public returns(uint) {
         return x; 
     }
 
-    function getY() public returns(uint) {
+    function getY() view public returns(uint) {
         return y; 
     }
     
@@ -26,7 +26,7 @@ contract Location{
         y=_y; 
     }
     
-    function sqrt(uint x) private returns (uint y) {
+    function sqrt(uint x) pure private returns (uint y) {
             uint z = (x + 1) / 2;
         y = x;
         while (z < y) {
@@ -35,7 +35,7 @@ contract Location{
         }
     }
     
-    function distanceFrom(Location A) public returns (uint){
+    function distanceFrom(Location A) view public returns (uint){
         uint distance = sqrt((A.getX()-x)**2+(A.getY()-y)**2);
         return distance;
     }

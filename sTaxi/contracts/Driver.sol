@@ -10,20 +10,22 @@ contract Driver{
     uint private rateValue;
     uint private numRates; 
     Location private location;
-    Location temp;
     uint x;
     uint y;
     bool isFree = true;
     
 
-    constructor(string _name, string _plateNumber, string _mobileNumber,uint x, uint y, uint _id) public{
-        temp.setX(x);
-        temp.setY(y);
+    constructor(string _name, string _plateNumber, string _mobileNumber,uint _x, uint _y, uint _id) public{
         name = _name;
         plateNumber = _plateNumber;
         mobileNumber = _mobileNumber;
-        location=temp;
+        location=new Location(_x,_y);
         id = _id;
+    }
+    event WhatIsThis(address a);
+    function getDriverAddress()  public returns (address){
+        emit WhatIsThis(this);
+        return this;
     }
 
     function rate(uint _rate) public{   
@@ -31,32 +33,32 @@ contract Driver{
         numRates++;
     }
 
-    function getRateValue() public returns(uint) {
+    function getRateValue() view public returns(uint) {
         return rateValue; 
     }
 
-    function getName() public returns(string) {
+    function getName() view public returns(string) {
         return name; 
     }
 
-    function getPlateNumber() public returns(string) {
+    function getPlateNumber() view public returns(string) {
         return plateNumber; 
     }
 
-    function getMobileNumber() public returns(string) {
+    function getMobileNumber() view public returns(string) {
         return mobileNumber; 
     }
     
-    function getLocation() public returns(Location) {
+    function getLocation() view public returns(Location) {
         return location; 
+    }
+    
+    function getIsFree() view public returns (bool){
+        return isFree;
     }
     
     function setLocation(uint _x,uint _y) public{
         location=new Location(_x,_y);
-    }
-    
-    function getIsFree() public returns (bool){
-        return isFree;
     }
     
     function setIsFree(bool isFree_) public{
