@@ -68,7 +68,7 @@ contract Trip{
         }
     }
    
-    function sameLocation(Location a, Location b) view private returns (bool){
+    function sameLocation(Location a, Location b) private returns (bool){
         if(sqrt((b.getX() - a.getX())**2 + (b.getY() - a.getY())**2) <= 5)
             return true;
         else
@@ -88,6 +88,7 @@ contract Trip{
     //         suicide(passengerAddress);
     //     }
     // }
+    
     function payFee() public payable{
         require(msg.sender == passengerAddress);
         contractValue = this.balance;
@@ -99,12 +100,14 @@ contract Trip{
             suicide(passengerAddress);
         }
     }
+    
     function startTrip() public payable {
         require(managerSet==true);
-        if(sameLocation(driver.getLocation(), source) && paid)    {
+        
+        if(sameLocation(manager.getDriver(driver).getLocation(), source) && paid)    {
             //changing the status
-            //tripStat = tripStatus.tripStarted;
-            // driver.setIsFree(false);
+            tripStat = tripStatus.tripStarted;
+            manager.setDriverFreeness(driver, false);
         }
 
     }
@@ -139,7 +142,7 @@ contract Trip{
     }
     
     modifier validLocationsForEndTrip(){
-        require(sameLocation(newDriverLocation, destination) && sameLocation(newPassengerLocation, destination), "not modified");
+        // require(sameLocation(newDriverLocation, destination) && sameLocation(newPassengerLocation, destination), "not modified");
         _;
     }
     
@@ -150,7 +153,7 @@ contract Trip{
         // emit testEndTrip(111);
 
         tripStat = tripStatus.tripEnded;
-        driver.setIsFree(true);
+        manager.setDriverFreeness(driver, true);
         suicide(msg.sender);
     }
 }

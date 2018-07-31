@@ -17,6 +17,19 @@ contract Manager{
         addDriver(msg.sender, driver);
     }
     
+    function getDriverNumber() public returns(uint) {
+    
+        return driverCounter;
+    }
+    
+    function getDriver(address driverAdd) view public returns (Driver d) {
+        return drivers[driverAdd];
+    }
+    
+    function setDriverFreeness(address driverAdd, bool freeness) public {
+        drivers[driverAdd].setIsFree(freeness);
+    }
+    
     function addDriver(address _driverAddress,Driver _driver) private {
         drivers[_driverAddress] = _driver;
         driverAddressFinder[driverCounter] = _driverAddress;
