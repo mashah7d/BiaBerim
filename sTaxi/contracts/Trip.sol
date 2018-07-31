@@ -19,7 +19,8 @@ contract Trip{
     uint public contractValue;
     Driver public driver;
     address public passengerAddress;
-    bool private paid=false;
+    bool public paid=false;
+    bool public managerSet=false;
     bool public sendAck = false;
     bool rated=false;
     address public driverAddress;
@@ -37,8 +38,12 @@ contract Trip{
     }
     
     function setManager(address mangerAddress) public {
-        manager = Manager(mangerAddress);
-        driver = Driver(manager.findNearestDriver(source.getX(),source.getY()));
+        if(mangerAddress!=0x0){
+            manager = Manager(mangerAddress);
+            managerSet = true;
+            driverAddress = (manager.findNearestDriver(source.getX(),source.getY()));
+            driver = Driver(driverAddress);
+        }
     }
     
     //Not Used
@@ -47,6 +52,7 @@ contract Trip{
         return driverAddress;
     }
     
+    //Not Used
     modifier passengerHasEnoughDeposit()  {
         require(passengerAddress.balance > tripFee,"Not enough Ether provided.");
         _;
@@ -73,35 +79,47 @@ contract Trip{
     //     msg.sender.send(20 ether);
     // }
     
-    function () public payable {
+    // function () public payable {
+    //     contractValue = this.balance;
+    //     if(contractValue>tripFee){
+    //         paid=true;
+    //     }else{
+    //         paid=false;
+    //         suicide(passengerAddress);
+    //     }
+    // }
+    function payFee() public payable{
+        require(msg.sender == passengerAddress);
         contractValue = this.balance;
-        if(contractValue>=tripFee){
+        
+        if(contractValue>tripFee){
             paid=true;
         }else{
             paid=false;
-            refund();
+            suicide(passengerAddress);
         }
     }
-    
-    function refund() public payable{
-        if(tripStat == tripStatus.tripNotStarted)
-            suicide(passengerAddress);
-    }
-    
-    function startTrip() private {
-        if(sameLocation(driver.getLocation(), source))    {
-            //change the status
-            tripStat = tripStatus.tripStarted;
-            driver.setIsFree(false);
+    function startTrip() public payable {
+        require(managerSet==true);
+        if(sameLocation(driver.getLocation(), source) && paid)    {
+            //changing the status
+            //tripStat = tripStatus.tripStarted;
+            // driver.setIsFree(false);
         }
 
     }
     
     //complete the passenger request for ending the trip
     function passengerCancelTrip() public {
-        if(tripStat == tripStatus.tripNotStarted)
-            refund();
+        require(msg.sender == passengerAddress);
+        if(tripStat == tripStatus.tripNotStarted || tripStat == tripStatus.tripRequested)
+            suicide(passengerAddress);
     }
+    
+    // function refund() public payable{
+    //     if(tripStat == tripStatus.tripNotStarted)
+    //         suicide(passengerAddress);
+    // }
     
     function rateDriver(uint _rate) public {
         if(_rate!=0){
@@ -111,10 +129,12 @@ contract Trip{
     }
     
     function setNewDriverLocation(uint xx, uint yy) public{
+        require(msg.sender == driverAddress);
         newDriverLocation = new Location(xx,yy);
     }
     
     function getNewPassengerLocation(uint xx, uint yy) public{
+        require(msg.sender == passengerAddress);
         newPassengerLocation = new Location(xx, yy);
     }
     
@@ -123,16 +143,14 @@ contract Trip{
         _;
     }
     
-    event testEndTrip(uint a);
+    // event testEndTrip(uint a);
     function endTrip() public validLocationsForEndTrip {
-        // require(msg.sender == driver.getDriverAddress());
-        emit testEndTrip(111);
+        require(msg.sender == driverAddress);
+        // require(rated);
+        // emit testEndTrip(111);
 
         tripStat = tripStatus.tripEnded;
-        // driver.toggle();
-        //we need three requirement for endTrip
-        //check the timer not to be ended 10 hour for example
-        // require(rated);
+        driver.setIsFree(true);
         suicide(msg.sender);
     }
 }

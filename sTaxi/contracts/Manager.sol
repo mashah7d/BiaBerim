@@ -50,13 +50,13 @@ contract Manager{
         //Write the code to iterate all drivers and calculate their distance from source 
         Location source = new Location(_xSource, _ySource);
         uint temp=1000000;
-        uint driverNum=2;
-        for(uint i=0; i<2; i++){
+        uint driverNum=0;
+        for(uint i=0; i<driverCounter; i++){
             
             if(drivers[driverAddressFinder[i]].getLocation().distanceFrom(source) < temp && drivers[driverAddressFinder[i]].getIsFree()){
                 temp=drivers[driverAddressFinder[i]].getLocation().distanceFrom(source);
                 
-                emit logDistanceFrom(driverCounter);
+                // emit logDistanceFrom(driverCounter);
 
                 driverNum=i;
             }

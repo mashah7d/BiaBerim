@@ -8,7 +8,4 @@ module.exports = function(deployer) {
     deployer.deploy(Manager);
     deployer.deploy(Trip,0,0,1,1,);
 	deployer.deploy(Driver,"sina","1234","4321",0,0,0);
-
-
 };
-
